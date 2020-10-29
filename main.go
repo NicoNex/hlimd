@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -11,10 +13,13 @@ import (
 	"github.com/getlantern/systray"
 )
 
-var current int64
-var start time.Time
-var timer *time.Timer
-var tmre = regexp.MustCompile(`(\d{2}):(\d{2}):(\d{2})`)
+var (
+	current              int64
+	start                time.Time
+	timer                *time.Timer
+	tmre                 = regexp.MustCompile(`(\d{2}):(\d{2}):(\d{2})`)
+	InvalidTimeFormatErr = errors.New("invalid time format: must be HH:mm:ss")
+)
 
 func listenEvent(events chan string) {
 	for e := range events {
@@ -47,6 +52,8 @@ func listenEvent(events chan string) {
 				now.Nanosecond(),
 				now.Location(),
 			)
+		} else {
+			log.Println(InvalidTimeFormatErr)
 		}
 	}
 }
@@ -84,11 +91,20 @@ func onExit() {
 }
 
 func main() {
+	var stime string
 	var evch = make(chan string)
+
+	flag.StringVar(&stime, "s", "", "Start time of the counter.")
+	flag.Parse()
 
 	start = time.Now()
 	timer = time.AfterFunc(time.Second, updateTime)
 	go listenPipe(evch)
 	go listenEvent(evch)
+
+	if stime != "" {
+		evch <- stime
+	}
+
 	systray.Run(onReady, onExit)
 }
