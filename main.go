@@ -46,9 +46,9 @@ func listenEvent(events chan string) {
 				now.Year(),
 				now.Month(),
 				now.Day(),
-				int(hours),
-				int(minutes),
-				int(seconds),
+				int(hours)%24,
+				int(minutes)%60,
+				int(seconds)%60,
 				now.Nanosecond(),
 				now.Location(),
 			)
