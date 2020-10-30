@@ -52,6 +52,7 @@ func listenEvent(events chan string) {
 				now.Nanosecond(),
 				now.Location(),
 			)
+			log.Printf("start time set to '%s'\n", e[:len(e)-1])
 		} else {
 			log.Println(InvalidTimeFormatErr)
 		}
